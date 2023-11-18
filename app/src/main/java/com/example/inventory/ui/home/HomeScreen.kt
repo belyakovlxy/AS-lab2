@@ -187,7 +187,9 @@ private fun InventoryItem(
 fun HomeBodyPreview() {
     InventoryTheme {
         HomeBody(listOf(
-            Item(1, "Game", 100.0, 20), Item(2, "Pen", 200.0, 30), Item(3, "TV", 300.0, 50)
+            Item(1, "Game", 100.0, 20, "kek", "123", "kek@kek.com"),
+            Item(2, "Pen", 200.0, 30, "kek", "123", "kek@kek.com"),
+            Item(3, "TV", 300.0, 50, "kek", "123", "kek@kek.com")
         ), onItemClick = {})
     }
 }
@@ -205,7 +207,7 @@ fun HomeBodyEmptyListPreview() {
 fun InventoryItemPreview() {
     InventoryTheme {
         InventoryItem(
-            Item(1, "Game", 100.0, 20),
+            Item(1, "Game", 100.0, 20,  "kek", "123", "kek@kek.com"),
         )
     }
 }

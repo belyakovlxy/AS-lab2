@@ -51,6 +51,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -199,6 +200,33 @@ fun ItemDetails(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
                 )
             )
+            Spacer(Modifier.padding(Dp(3f)))
+            Text(
+                text = "Supplier Info",
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                ))
+            ItemDetailsRow(
+                labelResID = R.string.supplier_name,
+                itemDetail = item.supplierName,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            ItemDetailsRow(
+                labelResID = R.string.supplier_email,
+                itemDetail = item.supplierEmail,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            ItemDetailsRow(
+                labelResID = R.string.phone_number,
+                itemDetail = item.phoneNumber,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
         }
     }
 }
@@ -243,7 +271,7 @@ fun ItemDetailsScreenPreview() {
         ItemDetailsBody(
             ItemDetailsUiState(
                 outOfStock = true,
-                itemDetails = ItemDetails(1, "Pen", "$100", "10")
+                itemDetails = ItemDetails(1, "Pen", "$100", "10", "kek", "123", "kek@kek.com")
             ),
             onSellItem = {},
             onDelete = {}
