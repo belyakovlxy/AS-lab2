@@ -16,6 +16,7 @@
 
 package com.example.inventory.ui.item
 
+import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -60,6 +62,7 @@ import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
+import android.content.Context as Context1
 
 object ItemDetailsDestination : NavigationDestination {
     override val route = "item_details"
@@ -103,6 +106,7 @@ fun ItemDetailsScreen(
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
             onSellItem = { viewModel.reduceQuantityByOne() },
+            onShareItem = { viewModel.run { share() } },
             onDelete = { coroutineScope.launch {
                 viewModel.deleteItem()
                 navigateBack()
@@ -119,6 +123,7 @@ fun ItemDetailsScreen(
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
     onSellItem: () -> Unit,
+    onShareItem: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -139,6 +144,14 @@ private fun ItemDetailsBody(
             enabled = true
         ) {
             Text(stringResource(R.string.sell))
+        }
+        Button(
+            onClick = onShareItem,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+            enabled = true
+        ) {
+            Text("Share")
         }
         OutlinedButton(
             onClick = { deleteConfirmationRequired = true },
@@ -274,6 +287,7 @@ fun ItemDetailsScreenPreview() {
                 itemDetails = ItemDetails(1, "Pen", "$100", "10", "kek", "123", "kek@kek.com")
             ),
             onSellItem = {},
+            onShareItem = {},
             onDelete = {}
         )
     }

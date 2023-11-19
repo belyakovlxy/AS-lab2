@@ -16,16 +16,20 @@
 
 package com.example.inventory.ui.item
 
+import android.content.Intent
+import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.example.inventory.data.ItemsRepository
 import androidx.lifecycle.viewModelScope
+import com.example.inventory.MAIN
+import com.example.inventory.data.ItemsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
 
 /**
  * ViewModel to retrieve, update and delete an item from the [ItemsRepository]'s data source.
@@ -63,8 +67,28 @@ class ItemDetailsViewModel(
     suspend fun deleteItem() {
         itemsRepository.deleteItem(uiState.value.itemDetails.toItem())
     }
-}
 
+    fun share() {
+        val sharingIntent = Intent(Intent.ACTION_SEND)
+        sharingIntent.type = "text/plain"
+
+        val sharingText = """
+            Item Details:
+            Name: ${uiState.value.itemDetails.name}
+            Price: ${uiState.value.itemDetails.price} $
+            Quatity: ${uiState.value.itemDetails.quantity}
+            
+            Supplier Info:
+            Name: ${uiState.value.itemDetails.supplierName}
+            Phone Number: ${uiState.value.itemDetails.phoneNumber}
+            Email: ${uiState.value.itemDetails.supplierEmail}
+        """.trimIndent()
+
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, sharingText)
+
+        MAIN.startActivity(Intent.createChooser(sharingIntent, null))
+    }
+}
 /**
  * UI state for ItemDetailsScreen
  */
