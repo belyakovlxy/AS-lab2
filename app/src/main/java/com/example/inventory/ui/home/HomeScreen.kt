@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +71,7 @@ object HomeDestination : NavigationDestination {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
+    navigateToSettings: () -> Unit,
     navigateToItemEntry: () -> Unit,
     navigateToItemUpdate: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -87,17 +89,11 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = navigateToItemEntry,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.item_entry_title)
-                )
-            }
-        },
+            FloatingButtonsColomn(
+                navigateToItemEntry = navigateToItemEntry,
+                navigateToSettings = navigateToSettings
+            )
+        }
     ) { innerPadding ->
         HomeBody(
             itemList = homeUiState.itemList,
@@ -107,6 +103,38 @@ fun HomeScreen(
                 .fillMaxSize()
         )
     }
+}
+
+@Composable
+private fun FloatingButtonsColomn(
+    navigateToItemEntry: () -> Unit,
+    navigateToSettings: () -> Unit
+)
+{
+    Column() {
+        FloatingActionButton(
+            onClick = navigateToItemEntry,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(R.string.item_entry_title)
+            )
+        }
+
+        FloatingActionButton(
+            onClick = navigateToSettings,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings"
+            )
+        }
+    }
+
 }
 
 @Composable

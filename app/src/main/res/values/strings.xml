@@ -15,6 +15,7 @@
   -->
 <resources>
     <string name="app_name">Inventory</string>
+    <string name="settings_title">Settings</string>
     <string name="attention">Attention</string>
     <string name="back_button">Back</string>
     <string name="delete">Delete</string>
