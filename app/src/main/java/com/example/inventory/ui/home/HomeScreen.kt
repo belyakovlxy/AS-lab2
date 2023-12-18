@@ -54,6 +54,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.data.Item
+import com.example.inventory.data.MadeBy
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.item.formatedPrice
 import com.example.inventory.ui.navigation.NavigationDestination
@@ -215,9 +216,9 @@ private fun InventoryItem(
 fun HomeBodyPreview() {
     InventoryTheme {
         HomeBody(listOf(
-            Item(1, "Game", 100.0, 20, "kek", "123", "kek@kek.com"),
-            Item(2, "Pen", 200.0, 30, "kek", "123", "kek@kek.com"),
-            Item(3, "TV", 300.0, 50, "kek", "123", "kek@kek.com")
+            Item(1, "Game", 100.0, 20, "kek", "123", "kek@kek.com", MadeBy.manual),
+            Item(2, "Pen", 200.0, 30, "kek", "123", "kek@kek.com", MadeBy.manual),
+            Item(3, "TV", 300.0, 50, "kek", "123", "kek@kek.com", MadeBy.manual)
         ), onItemClick = {})
     }
 }
@@ -235,7 +236,7 @@ fun HomeBodyEmptyListPreview() {
 fun InventoryItemPreview() {
     InventoryTheme {
         InventoryItem(
-            Item(1, "Game", 100.0, 20,  "kek", "123", "kek@kek.com"),
+            Item(1, "Game", 100.0, 20,  "kek", "123", "kek@kek.com", MadeBy.file),
         )
     }
 }

@@ -16,12 +16,22 @@
 
 package com.example.inventory.ui.item
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.security.crypto.EncryptedFile
+import com.example.inventory.MAIN
+import com.example.inventory.MASTER_KEY
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
+import com.example.inventory.data.MadeBy
+import com.example.inventory.data.Settings
+import com.google.gson.Gson
+import java.io.File
+import java.io.FileInputStream
 import java.text.NumberFormat
 
 /**
@@ -56,13 +66,61 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
             itemsRepository.insertItem(itemUiState.itemDetails.toItem())
         }
     }
+
+    suspend fun loadFromFile(uri: Uri)
+    {
+        val contentResolver = MAIN.applicationContext.contentResolver
+
+        val file = File(MAIN.applicationContext.cacheDir, "temp.json")
+        if (file.exists())
+            file.delete()
+
+        val encryptedFile = EncryptedFile.Builder(
+            MAIN.applicationContext,
+            file,
+            MASTER_KEY,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
+
+        file.outputStream().use { outputStream ->
+            contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
+                FileInputStream(descriptor.fileDescriptor).use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                    inputStream.close()
+                }
+                outputStream.close()
+            }
+        }
+
+        encryptedFile.openFileInput().use { inputStream ->
+            val jsonItem = String(inputStream.readBytes())
+            val gson = Gson()
+            val item = gson.fromJson(jsonItem, Item::class.java)
+            item.madeBy = MadeBy.file
+
+            itemsRepository.insertItem(item)
+
+            file.delete()
+        }
+    }
 }
 
 /**
  * Represents Ui State for an Item.
  */
 data class ItemUiState(
-    val itemDetails: ItemDetails = ItemDetails(),
+    val itemDetails: ItemDetails = if (!Settings.enableDefaultSettings)
+        ItemDetails()
+    else ItemDetails(
+        id = 0,
+        name = "",
+        price = "",
+        quantity = "",
+        supplierName = Settings.defaultSupplierName,
+        phoneNumber = Settings.defaultPhoneNumber,
+        supplierEmail = Settings.defaultSupplierEmail,
+        madeBy = MadeBy.manual.toString()
+    ),
     val isEntryValid: Boolean = false
 )
 
@@ -73,7 +131,8 @@ data class ItemDetails(
     val quantity: String = "",
     val supplierName: String = "",
     val phoneNumber: String = "",
-    val supplierEmail: String = ""
+    val supplierEmail: String = "",
+    val madeBy: String = ""
 )
 
 /**
@@ -88,7 +147,8 @@ fun ItemDetails.toItem(): Item = Item(
     quantity = quantity.toIntOrNull() ?: 0,
     supplierName = supplierName,
     phoneNumber = phoneNumber,
-    supplierEmail = supplierEmail
+    supplierEmail = supplierEmail,
+    madeBy = if (madeBy == MadeBy.manual.toString()) MadeBy.manual else MadeBy.file
 )
 
 fun Item.formatedPrice(): String {
@@ -113,5 +173,7 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     quantity = quantity.toString(),
     supplierName = supplierName,
     phoneNumber = phoneNumber,
-    supplierEmail = supplierEmail
+    supplierEmail = supplierEmail,
+    madeBy = madeBy.toString()
+
 )

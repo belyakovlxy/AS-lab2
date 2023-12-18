@@ -17,6 +17,8 @@
 package com.example.inventory.ui.item
 
 import android.view.View
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.data.Item
+import com.example.inventory.data.Settings
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
@@ -82,6 +85,7 @@ fun ItemDetailsScreen(
     val uiState = viewModel.uiState.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             InventoryTopAppBar(
@@ -105,8 +109,9 @@ fun ItemDetailsScreen(
     ) { innerPadding ->
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
+            viewModel = viewModel,
             onSellItem = { viewModel.reduceQuantityByOne() },
-            onShareItem = { viewModel.run { share() } },
+            onShareItem = { viewModel.share() },
             onDelete = { coroutineScope.launch {
                 viewModel.deleteItem()
                 navigateBack()
@@ -122,11 +127,20 @@ fun ItemDetailsScreen(
 @Composable
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
+    viewModel: ItemDetailsViewModel,
     onSellItem: () -> Unit,
     onShareItem: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val saveFileLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument()
+        ) { uri ->
+            if (uri == null)
+                return@rememberLauncherForActivityResult
+            viewModel.saveToFile(uri)
+        }
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
@@ -145,14 +159,28 @@ private fun ItemDetailsBody(
         ) {
             Text(stringResource(R.string.sell))
         }
+
+        if (!Settings.disableSharing)
+        {
+            Button(
+                onClick = onShareItem,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small,
+                enabled = true
+            ) {
+                Text("Share")
+            }
+        }
+
         Button(
-            onClick = onShareItem,
+            onClick = { saveFileLauncher.launch("${viewModel.uiState.value.itemDetails.name}.json") },
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
             enabled = true
         ) {
-            Text("Share")
+            Text("Save to file")
         }
+
         OutlinedButton(
             onClick = { deleteConfirmationRequired = true },
             shape = MaterialTheme.shapes.small,
@@ -177,6 +205,19 @@ private fun ItemDetailsBody(
 fun ItemDetails(
     item: Item, modifier: Modifier = Modifier
 ) {
+    var supPhone = ""
+    var supEmail = ""
+    if (Settings.hideSensitiveData)
+    {
+        supPhone = "*************"
+        supEmail = "*************"
+    }
+    else
+    {
+        supPhone = item.phoneNumber
+        supEmail = item.supplierEmail
+    }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -228,14 +269,22 @@ fun ItemDetails(
             )
             ItemDetailsRow(
                 labelResID = R.string.supplier_email,
-                itemDetail = item.supplierEmail,
+                itemDetail = supEmail,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
                 )
             )
             ItemDetailsRow(
                 labelResID = R.string.phone_number,
-                itemDetail = item.phoneNumber,
+                itemDetail = supPhone,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            Spacer(Modifier.padding(Dp(2f)))
+            ItemDetailsRow(
+                labelResID = R.string.made_by,
+                itemDetail = item.madeBy.name,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
                 )
@@ -277,18 +326,18 @@ private fun DeleteConfirmationDialog(
         })
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ItemDetailsScreenPreview() {
-    InventoryTheme {
-        ItemDetailsBody(
-            ItemDetailsUiState(
-                outOfStock = true,
-                itemDetails = ItemDetails(1, "Pen", "$100", "10", "kek", "123", "kek@kek.com")
-            ),
-            onSellItem = {},
-            onShareItem = {},
-            onDelete = {}
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ItemDetailsScreenPreview() {
+//    InventoryTheme {
+//        ItemDetailsBody(
+//            ItemDetailsUiState(
+//                outOfStock = true,
+//                itemDetails = ItemDetails(1, "Pen", "$100", "10", "kek", "123", "kek@kek.com")
+//            ),
+//            onSellItem = {},
+//            onShareItem = {},
+//            onDelete = {}
+//        )
+//    }
+//}

@@ -41,6 +41,12 @@
     <string name="phone_number">Phone Number</string>
     <string name="supplier_email">Email</string>
 
+    <string name="made_by">Item source</string>
+
+    <string name="enable_default_settings">Enable default settings</string>
+    <string name="hide_sensitive_data">Hide Sensitive Data</string>
+    <string name="disable_direct_sharing">Disable Direct Sharing</string>
+
     <string name="save_action">Save</string>
     <string name="sell">Sell</string>
     <string name="yes">Yes</string>

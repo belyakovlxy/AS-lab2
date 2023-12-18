@@ -32,5 +32,12 @@ data class Item(
     val quantity: Int,
     val supplierName: String,
     val phoneNumber: String,
-    val supplierEmail: String
+    val supplierEmail: String,
+    var madeBy: MadeBy
 )
+
+enum class MadeBy
+{
+    manual,
+    file
+}

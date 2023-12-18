@@ -3,6 +3,7 @@ package com.example.inventory.ui.settings
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -21,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
@@ -55,50 +60,59 @@ object SettingsDestination : NavigationDestination {
 fun SettingsScreen(
     navigateBack: () -> Unit,
     onNavigateUp: (Int) -> Unit,
-    modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val settingsUiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.initUiState()
+    }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             InventoryTopAppBar(
                 title = stringResource(SettingsDestination.titleRes),
-                canNavigateBack = true,
                 scrollBehavior = scrollBehavior,
+                canNavigateBack = true,
                 navigateUp = navigateBack
             )
         }
     )
     { innerPadding ->
         SettingsBody(
-            defaultSettings = viewModel.defaultSettings,
+            settingsUiState = settingsUiState,
+            viewModel = viewModel,
+            navigateBack = navigateBack,
             modifier = Modifier
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
+                .fillMaxSize()
         )
     }
 }
 
 @Composable
 private fun SettingsBody(
-    defaultSettings: DefaultSettings,
+    settingsUiState: SettingsUiState,
+    viewModel: SettingsViewModel,
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium))
     ) {
         SettingsDefaultForm(
-            defaultSettings = defaultSettings,
-            modifier = modifier
+            settingsUiState = settingsUiState,
+            viewModel = viewModel,
+            navigateBack = navigateBack,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
 @Composable
 private fun SettingsDefaultForm(
-    defaultSettings : DefaultSettings,
+    settingsUiState: SettingsUiState,
+    viewModel: SettingsViewModel,
+    navigateBack: () -> Unit,
     modifier: Modifier,
     enabled: Boolean = true
 )
@@ -108,8 +122,8 @@ private fun SettingsDefaultForm(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ){
         OutlinedTextField(
-            value = defaultSettings.supplierName,
-            onValueChange = {  },
+            value = settingsUiState.supplierName,
+            onValueChange = { viewModel.onNameChange(it) },
             label = { Text(stringResource(R.string.supplier_name_req)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -121,8 +135,8 @@ private fun SettingsDefaultForm(
             singleLine = true
         )
         OutlinedTextField(
-            value = defaultSettings.phoneNumber,
-            onValueChange = {  },
+            value = settingsUiState.phoneNumber,
+            onValueChange = { viewModel.onPhoneChange(it) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             label = { Text(stringResource(R.string.phone_number_req)) },
             colors = OutlinedTextFieldDefaults.colors(
@@ -135,8 +149,8 @@ private fun SettingsDefaultForm(
             singleLine = true
         )
         OutlinedTextField(
-            value = defaultSettings.supplierEmail,
-            onValueChange = {  },
+            value = settingsUiState.supplierEmail,
+            onValueChange = { viewModel.onEmailChange(it) },
             label = { Text(stringResource(R.string.supplier_email_req)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -147,6 +161,60 @@ private fun SettingsDefaultForm(
             enabled = enabled,
             singleLine = true
         )
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Checkbox(
+                checked = settingsUiState.enableDefaultSettings,
+                onCheckedChange = { viewModel.onEnableDefaultSettingsChage(it) },
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(text = stringResource(R.string.enable_default_settings))
+        }
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+
+            Checkbox(
+                checked = settingsUiState.hideSensitiveData,
+                onCheckedChange = { viewModel.onHideSensitiveDataChange(it) },
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(text = stringResource(R.string.hide_sensitive_data))
+        }
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Checkbox(
+                checked = settingsUiState.disableSharing,
+                onCheckedChange = { viewModel.onDisableSharingChange(it) },
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(text = stringResource(R.string.disable_direct_sharing))
+        }
+
+        Button(
+            onClick = {
+                viewModel.save()
+                navigateBack()
+            },
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(id = R.string.save_action))
+        }
     }
 }
 

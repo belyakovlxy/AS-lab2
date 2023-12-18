@@ -16,6 +16,8 @@
 
 package com.example.inventory.ui.item
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,20 +32,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
-import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
 import java.util.Currency
 import java.util.Locale
@@ -62,6 +61,17 @@ fun ItemEntryScreen(
     viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val loadFileLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            if (uri == null)
+                return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                viewModel.loadFromFile(uri)
+                navigateBack()
+            }
+        }
     Scaffold(
         topBar = {
             InventoryTopAppBar(
@@ -70,6 +80,7 @@ fun ItemEntryScreen(
                 navigateUp = onNavigateUp
             )
         }
+
     ) { innerPadding ->
         ItemEntryBody(
             itemUiState = viewModel.itemUiState,
@@ -79,6 +90,8 @@ fun ItemEntryScreen(
                     navigateBack()
                 }
             },
+            navigateBack = navigateBack,
+            viewModel = viewModel,
             modifier = Modifier
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
@@ -92,17 +105,41 @@ fun ItemEntryBody(
     itemUiState: ItemUiState,
     onItemValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
+    navigateBack: () -> Unit,
+    viewModel: ItemEntryViewModel?,
     modifier: Modifier = Modifier
 ) {
+    var shownItemDetails = itemUiState.itemDetails
+    val coroutineScope = rememberCoroutineScope()
+    val loadFileLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            if (uri == null)
+                return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                viewModel!!.loadFromFile(uri)
+                navigateBack()
+            }
+        }
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large)),
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium))
         ) {
         ItemInputForm(
-            itemDetails = itemUiState.itemDetails,
+            itemDetails = shownItemDetails,
             onValueChange = onItemValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Button(
+            onClick = { loadFileLauncher.launch(arrayOf("application/json")) },
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Load item from file")
+        }
+
         Button(
             onClick = onSaveClick,
             enabled = itemUiState.isEntryValid,
@@ -217,14 +254,14 @@ fun ItemInputForm(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun ItemEntryScreenPreview() {
-    InventoryTheme {
-        ItemEntryBody(itemUiState = ItemUiState(
-            ItemDetails(
-                name = "Item name", price = "10.00", quantity = "5", supplierName = "kek", phoneNumber = "123", supplierEmail = "kek@kek.com"
-            )
-        ), onItemValueChange = {}, onSaveClick = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun ItemEntryScreenPreview() {
+//    InventoryTheme {
+//        ItemEntryBody(itemUiState = ItemUiState(
+//            ItemDetails(
+//                name = "Item name", price = "10.00", quantity = "5", supplierName = "kek", phoneNumber = "123", supplierEmail = "kek@kek.com"
+//            )
+//        ), onItemValueChange = {}, onSaveClick = {}, )
+//    }
+//}
