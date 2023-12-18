@@ -63,10 +63,17 @@ object Settings {
             sharedPreferences.edit().putBoolean(DISABLE_SHARING_KEY, value).apply()
         }
 
+    var password: String?
+        get() = sharedPreferences.getString(PASSWORD_KEY, null)
+        set(passphrase) {
+            sharedPreferences.edit().putString(PASSWORD_KEY, passphrase).apply()
+        }
+
     private const val DEF_SUP_NAME_KEY = "default_supplier_name"
     private const val DEF_PHONE_NUM_KEY = "default_phone_number"
     private const val DEF_SUP_EMAIL_KEY = "default_supplier_email"
     private const val ENABLE_DEF_SETTINGS_KEY = "enable_def_fields"
     private const val HIDE_SENSITIVE_DATA_KEY = "hide_sensitive_data"
     private const val DISABLE_SHARING_KEY = "disable_sharing"
+    private const val PASSWORD_KEY = "disable_sharing"
 }
